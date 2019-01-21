@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace indexes
 {
@@ -42,14 +38,13 @@ namespace indexes
                 using (var connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
-                    string createDB = "IF NOT EXISTS ( SELECT * FROM master.dbo.sysdatabases WHERE name = '" + SchemaName + "') BEGIN CREATE DATABASE " + SchemaName +" END";
+                    string createDB = "IF NOT EXISTS ( SELECT * FROM master.dbo.sysdatabases WHERE name = '" + SchemaName + "') BEGIN CREATE DATABASE " + SchemaName + " END";
                     using (var createDBCommand = new SqlCommand(createDB, connection))
                     {
                         var exists = createDBCommand.ExecuteNonQuery();
                         HasDataBase = true;
                         ConnectionString += "Initial Catalog = " + SchemaName + ";";
                     }
-                    connection.Close();
                 }
             }
         }
@@ -81,7 +76,6 @@ namespace indexes
                                 }
                             }
                         }
-                        connection.Close();
                     }
                 }
             }
@@ -103,12 +97,11 @@ namespace indexes
                         var exists = existsCommand.ExecuteReader();
                         HasTable = exists.HasRows;
                     }
-                    connection.Close();
                 }
             }
         }
 
-        
+
         /// <summary>
         /// test performance, method selects from Users by name
         /// </summary>
@@ -116,20 +109,20 @@ namespace indexes
         public void TestMethod(string name)
         {
             Stopwatch watcher = new Stopwatch();
-            watcher.Start();
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 var query = "SELECT * FROM Users WHERE first_name = '" + name + "'";
                 connection.Open();
+                watcher.Start();
+
                 using (var existsCommand = new SqlCommand(query, connection))
                 {
                     var exists = existsCommand.ExecuteReader();
                 }
-                connection.Close();
+                watcher.Stop();
             }
 
-            watcher.Stop();
             Console.WriteLine("Time elapsed: {0}", watcher.Elapsed);
             Console.WriteLine(new string('-', 50));
 
@@ -152,7 +145,6 @@ namespace indexes
                         var exists = dropDBCommand.ExecuteNonQuery();
                         HasDataBase = false;
                     }
-                    connection.Close();
                 }
             }
         }
